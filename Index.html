@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sunflower Sun Catcher Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB; /* Sky blue background */
+        }
+        #sunflower {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 150px;
+            background-color: yellow;
+            border-radius: 50% 50% 0 0;
+            box-shadow: inset -10px -10px 0px 0px orange;
+        }
+        .sun {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: orange;
+            border-radius: 50%;
+            box-shadow: 0 0 10px yellow;
+        }
+        #player {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+        #scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sunflower"></div>
+<div id="player"></div>
+<div id="scoreboard">Score: 0</div>
+<div id="timer">Time: 30</div>
+
+<script>
+    let score = 0;
+    let timeLeft = 30;
+    const player = document.getElementById('player');
+    const sunflower = document.getElementById('sunflower');
+    const scoreboard = document.getElementById('scoreboard');
+    const timerDisplay = document.getElementById('timer');
+    const suns = [];
+    let gameInterval;
+    let sunInterval;
+    let timerInterval;
+
+    // Move player with mouse or touch
+    function movePlayer(e) {
+        let x = e.clientX || e.touches[0].clientX;
+        player.style.left = (x - player.offsetWidth / 2) + 'px';
+    }
+
+    document.addEventListener('mousemove', movePlayer);
+    document.addEventListener('touchmove', movePlayer);
+
+    // Create suns
+    function createSun() {
+        const sun = document.createElement('div');
+        sun.classList.add('sun');
+        sun.style.left = (Math.random() * (window.innerWidth - 30)) + 'px';
+        sun.style.top = '-30px';
+        document.body.appendChild(sun);
+        suns.push(sun);
+    }
+
+    // Move suns
+    function moveSuns() {
+        suns.forEach((sun, index) => {
+            sun.style.top = (sun.offsetTop + 5) + 'px';
+
+            // Check collision with player
+            if (isColliding(sun, player)) {
+                document.body.removeChild(sun);
+                suns.splice(index, 1);
+                score++;
+                scoreboard.textContent = 'Score: ' + score;
+            }
+
+            // Remove sun if it goes off-screen
+            if (sun.offsetTop > window.innerHeight) {
+                document.body.removeChild(sun);
+                suns.splice(index, 1);
+            }
+        });
+    }
+
+    // Check collision
+    function isColliding(a, b) {
+        const aRect = a.getBoundingClientRect();
+        const bRect = b.getBoundingClientRect();
+        return !(
+            aRect.bottom < bRect.top ||
+            aRect.top > bRect.bottom ||
+            aRect.right < bRect.left ||
+            aRect.left > bRect.right
+        );
+    }
+
+    // Start game
+    function startGame() {
+        gameInterval = setInterval(moveSuns, 20);
+        sunInterval = setInterval(createSun, 1000);
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    // Update timer
+    function updateTimer() {
+        timeLeft--;
+        timerDisplay.textContent = 'Time: ' + timeLeft;
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }
+
+    // End game
+    function endGame() {
+        clearInterval(gameInterval);
+        clearInterval(sunInterval);
+        clearInterval(timerInterval);
+        alert('Game Over! Your score is: ' + score);
+        // Reset game
+        suns.forEach((sun) => {
+            document.body.removeChild(sun);
+        });
+        suns.length = 0;
+        score = 0;
+        timeLeft = 30;
+        scoreboard.textContent = 'Score: ' + score;
+        timerDisplay.textContent = 'Time: ' + timeLeft;
+        startGame(); // Restart the game automatically
+    }
+
+    // Start the game when page loads
+    window.onload = startGame;
+</script>
+
+</body>
+</html>
